@@ -1,0 +1,48 @@
+# admin/ klasörünü ve indirme istatistiklerini (stats.json) GitHub Pages'e yayınlar.
+# İlk kullanımda: Repo → Settings → Pages → Source: "GitHub Actions" seçilmeli.
+# İstatistikler 6 saatte bir yenilenir (GitHub, 60 gün hareketsiz repolarda zamanlanmış
+# iş akışlarını durdurur; bir push yeniden başlatır).
+name: Admin panelini yayınla
+
+on:
+  push:
+    branches: [main]
+    paths: ["admin/**", "catalog.json", "tools/stats.py", ".github/workflows/pages.yml"]
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Siteyi hazırla
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          pip install requests
+          mkdir -p _site
+          cp -r admin/. _site/
+          python tools/stats.py catalog.json _site/stats.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

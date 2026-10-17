@@ -1,0 +1,77 @@
+{
+  "catalog_version": "2.1",
+  "last_updated": "2026-10-17T08:54:59+00:00",
+  "catalog_url": "https://raw.githubusercontent.com/coffeelakedevv/cld-hub-store/main/catalog.json",
+  "stats_url": "https://coffeelakedevv.github.io/cld-hub-store/stats.json",
+  "apps": [
+    {
+      "id": "CLD-PG-07012026",
+      "name": "CLD Password Generator",
+      "description_en": "Password Generator helps you create strong passwords for all your accounts. Its most distinctive feature, setting it apart from other password generator apps, is that it includes 72 special symbols. While these symbols may not be accepted on some websites, they significantly make it harder for attackers to crack your password.",
+      "description_tr": "Password Generator, her türlü hesabınız için güçlü şifreler oluşturmanızı sağlar. Onu diğer şifre oluşturucu uygulamalardan ayıran en belirgin özelliği, 72 adet özel sembol içermesidir. Bu semboller bazı sitelerde geçerli olmasa da saldırganların şifrenizi kırmasını büyük ölçüde zorlaştırıyor.",
+      "category": "app",
+      "status": "archived",
+      "version": "1.2.5",
+      "github_repo": "coffeelakedevv/cld-password-generator",
+      "icon": "default",
+      "platforms": [
+        "windows"
+      ],
+      "release_date": "2026-01-07",
+      "downloads": {
+        "windows": {
+          "url": "https://github.com/coffeelakedevv/cld-password-generator/releases/download/v1.2.5/CLDPasswordGenerator-Windows64bit.rar",
+          "size_mb": 2.0
+        }
+      },
+      "download_url": "https://github.com/coffeelakedevv/cld-password-generator/releases/download/v1.2.5/CLDPasswordGenerator-Windows64bit.rar",
+      "size_mb": 2.0
+    },
+    {
+      "id": "CLD-MD-31122025",
+      "name": "CLD Media Downloader",
+      "description_en": "Download unlimited videos from YouTube, Instagram, TikTok, and many more sites.",
+      "description_tr": "YouTube, Instagram, TikTok ve çok daha fazla siteden limitsiz video indirin.",
+      "category": "app",
+      "status": "archived",
+      "version": "1.0.1-beta",
+      "github_repo": "coffeelakedevv/cld-media-downloader",
+      "icon": "default",
+      "platforms": [
+        "windows"
+      ],
+      "release_date": "2025-12-31",
+      "downloads": {
+        "windows": {
+          "url": "https://github.com/coffeelakedevv/cld-media-downloader/releases/download/v1.0.1-beta/CLDMediaDownloader-Windows64bit.exe",
+          "size_mb": 155.0
+        }
+      },
+      "download_url": "https://github.com/coffeelakedevv/cld-media-downloader/releases/download/v1.0.1-beta/CLDMediaDownloader-Windows64bit.exe",
+      "size_mb": 155.0
+    },
+    {
+      "id": "CLD-ZPV-24082022",
+      "name": "ZigZag PC Version",
+      "description_en": "This is the PC version of the mobile game ZigZag. While it's not quite like the mobile version, I did my best. Have fun!",
+      "description_tr": "Mobildeki ZigZag oyununun PC versiyonudur. Pek mobildekine benzemese de elimden geleni yaptım. İyi eğlenceler.",
+      "category": "game",
+      "status": "archived",
+      "version": "1.0",
+      "github_repo": "coffeelakedevv/zigzag-pc-version",
+      "icon": "game_puzzle",
+      "platforms": [
+        "windows"
+      ],
+      "release_date": "2022-08-24",
+      "downloads": {
+        "windows": {
+          "url": "https://github.com/coffeelakedevv/zigzag-pc-version/releases/download/v1.0/ZigZag-v1.0.rar",
+          "size_mb": 18.68
+        }
+      },
+      "download_url": "https://github.com/coffeelakedevv/zigzag-pc-version/releases/download/v1.0/ZigZag-v1.0.rar",
+      "size_mb": 18.68
+    }
+  ]
+}

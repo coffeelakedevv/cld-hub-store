@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; connect-src https://api.github.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self'; base-uri 'none'; form-action 'none'">
+  <title>CLD Hub Admin</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..24,400,0..1,0">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">C</span>
+      <span class="brand-name">CLD Hub <span class="muted">Admin</span></span>
+    </div>
+    <div class="topbar-info" id="source-label" hidden></div>
+    <div class="topbar-actions" id="topbar-actions" hidden>
+      <span class="dirty-pill" id="dirty-pill" hidden></span>
+      <button class="btn btn-ghost" id="btn-reload" type="button" title="Kataloğu yeniden yükle">
+        <span class="icon">refresh</span><span class="label">Yenile</span>
+      </button>
+      <button class="btn btn-ghost" id="btn-export" type="button" title="JSON olarak indir">
+        <span class="icon">download</span><span class="label">İndir</span>
+      </button>
+      <button class="btn btn-primary" id="btn-publish" type="button">
+        <span class="icon">publish</span><span class="label" id="publish-label">Yayınla</span>
+      </button>
+      <button class="btn btn-icon" id="btn-disconnect" type="button" title="Bağlantıyı kes">
+        <span class="icon">logout</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Bağlantı ekranı -->
+  <main id="view-connect" class="connect">
+    <section class="card connect-card">
+      <h1>Kataloğa bağlan</h1>
+      <p class="muted">Panel, <code>catalog.json</code> dosyasını doğrudan GitHub reposunda okur ve her yayın bir commit olarak kaydedilir.</p>
+
+      <form id="connect-form" novalidate>
+        <div class="grid-2">
+          <label class="field">
+            <span>Kullanıcı / organizasyon</span>
+            <input name="owner" required autocomplete="off" value="coffeelakedevv">
+          </label>
+          <label class="field">
+            <span>Repo</span>
+            <input name="repo" required autocomplete="off" value="cld-hub-store">
+          </label>
+          <label class="field">
+            <span>Dal (branch)</span>
+            <input name="branch" required autocomplete="off" value="main">
+          </label>
+          <label class="field">
+            <span>Dosya yolu</span>
+            <input name="path" required autocomplete="off" value="catalog.json">
+          </label>
+        </div>
+        <label class="field">
+          <span>GitHub token</span>
+          <div class="input-with-button">
+            <input name="token" type="password" required autocomplete="off" spellcheck="false"
+                   placeholder="github_pat_…">
+            <button class="btn btn-icon" type="button" id="toggle-token" title="Göster / gizle">
+              <span class="icon">visibility</span>
+            </button>
+          </div>
+          <small class="muted">
+            Yalnızca bu repo için <b>Contents: Read and write</b> izni olan bir
+            <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained token</a>
+            oluştur. Token hiçbir sunucuya gönderilmez; sadece bu tarayıcıdan GitHub'a iletilir.
+          </small>
+        </label>
+        <label class="check">
+          <input type="checkbox" name="remember">
+          <span>Bu cihazda hatırla <span class="muted">(kapalıysa sekme kapanınca silinir)</span></span>
+        </label>
+        <p class="form-error" id="connect-error" role="alert"></p>
+        <button class="btn btn-primary btn-wide" type="submit" id="btn-connect">
+          <span class="icon">link</span><span>Bağlan</span>
+        </button>
+      </form>
+
+      <div class="divider"><span>veya</span></div>
+      <label class="btn btn-ghost btn-wide file-btn">
+        <span class="icon">folder_open</span><span>Yerel catalog.json aç</span>
+        <input type="file" id="local-file" accept="application/json,.json">
+      </label>
+      <small class="muted center">Yerel modda değişiklikler GitHub'a gönderilmez; düzenledikten sonra dosyayı indirirsin.</small>
+    </section>
+  </main>
+
+  <!-- Katalog ekranı -->
+  <main id="view-catalog" class="catalog" hidden>
+    <div class="toolbar">
+      <div class="search">
+        <span class="icon">search</span>
+        <input id="search" type="search" placeholder="Ad veya ID ile ara" autocomplete="off">
+      </div>
+      <div class="chips" id="filters"></div>
+      <button class="btn btn-primary" id="btn-add" type="button">
+        <span class="icon">add</span><span>Yeni ekle</span>
+      </button>
+    </div>
+    <div id="app-list" class="app-list"></div>
+  </main>
+
+  <!-- Düzenleyici -->
+  <dialog id="editor" class="sheet">
+    <form id="editor-form" method="dialog" novalidate>
+      <header class="sheet-header">
+        <h2 id="editor-title">Yeni uygulama</h2>
+        <button class="btn btn-icon" type="button" data-close title="Kapat"><span class="icon">close</span></button>
+      </header>
+      <div class="sheet-body" id="editor-body"></div>
+      <footer class="sheet-footer">
+        <p class="form-error" id="editor-error" role="alert"></p>
+        <button class="btn btn-ghost" type="button" data-close>Vazgeç</button>
+        <button class="btn btn-primary" type="submit"><span class="icon">check</span><span>Kaydet</span></button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Yayınlama -->
+  <dialog id="publish" class="modal">
+    <form id="publish-form" method="dialog">
+      <h2>Değişiklikleri yayınla</h2>
+      <ul class="change-list" id="change-list"></ul>
+      <label class="field">
+        <span>Commit mesajı</span>
+        <input name="message" id="commit-message" required>
+      </label>
+      <p class="form-error" id="publish-error" role="alert"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" data-close>Vazgeç</button>
+        <button class="btn btn-primary" type="submit" id="btn-publish-confirm">
+          <span class="icon">publish</span><span>Yayınla</span>
+        </button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Onay -->
+  <dialog id="confirm" class="modal">
+    <form method="dialog">
+      <h2 id="confirm-title"></h2>
+      <p class="muted" id="confirm-text"></p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" value="cancel">Vazgeç</button>
+        <button class="btn btn-danger" value="ok" id="confirm-ok"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+</body>
+</html>
