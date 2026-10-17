@@ -93,6 +93,19 @@ export class GitHubClient {
     return { sha: result.content.sha, commitUrl: result.commit.html_url };
   }
 
+  /** Repoya yeni bir ikili dosya yükler (ör. logo) ve herkese açık raw adresini döner.
+   *  Yol içerik özetini içerdiği için aynı adda dosya yoktur; sha gerekmez. */
+  async uploadFile(path, bytes, message) {
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+    }
+    const encoded = path.split("/").map(encodeURIComponent).join("/");
+    await this.request("PUT", `${this.repoPath}/contents/${encoded}`,
+      { message, content: btoa(binary), branch: this.branch });
+    return `https://raw.githubusercontent.com/${this.owner}/${this.repo}/${this.branch}/${path}`;
+  }
+
   /** Bir uygulama reposunun son sürümünü (tag + dosyalar) getirir. */
   async latestRelease(repoFullName) {
     const [owner, repo] = repoFullName.split("/");

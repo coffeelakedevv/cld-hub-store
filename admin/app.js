@@ -247,7 +247,8 @@ function renderRow(app) {
   const marker = rowState(app);
   const platforms = PLATFORMS.filter((p) => app.platforms.includes(p.key));
   return h("article", { class: `app-row${marker ? " changed" : ""}` },
-    h("div", { class: "app-icon" }, icon(ICONS[app.icon] || ICONS.default)),
+    h("div", { class: "app-icon" },
+      app.logo ? h("img", { src: app.logo, alt: "", loading: "lazy" }) : icon(ICONS[app.icon] || ICONS.default)),
     h("div", { class: "app-main" },
       h("div", { class: "app-title" },
         h("span", {}, app.name || app.id),
@@ -310,6 +311,72 @@ function field(label, control, key, hint) {
 function select(name, options, value) {
   return h("select", { name },
     ...Object.entries(options).map(([k, v]) => h("option", { value: k, selected: k === value }, v)));
+}
+
+// ── Logo ─────────────────────────────────────────────────────
+
+const LOGO_TYPES = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp" };
+const LOGO_MAX_BYTES = 1024 * 1024;
+
+function buildLogoField(draft) {
+  const preview = h("div", { class: "logo-preview" });
+  const status = h("small", { class: "muted" },
+    "Kare bir PNG, JPG veya WebP (en az 256×256, en fazla 1 MB). Yüklenen dosya store reposundaki logos/ klasörüne kaydedilir.");
+  const urlInput = h("input", {
+    type: "url", name: "logo", value: draft.logo || "", placeholder: "https://… (yükleyince kendiliğinden dolar)",
+    oninput: () => showLogoPreview(preview, urlInput.value.trim()),
+  });
+  const fileInput = h("input", {
+    type: "file", accept: Object.keys(LOGO_TYPES).join(","),
+    onchange: () => uploadLogo(fileInput, urlInput, preview, status),
+  });
+  const uploadButton = h("label", { class: "btn btn-ghost file-btn" }, icon("upload"), "Logo yükle", fileInput);
+  uploadButton.hidden = state.mode !== "github";
+  showLogoPreview(preview, draft.logo);
+  return h("div", { class: "logo-row" },
+    preview,
+    h("div", { class: "logo-fields" },
+      h("div", { class: "input-with-button" }, field("Logo adresi", urlInput, "logo"),
+        h("div", { class: "field-aligned" }, uploadButton)),
+      status));
+}
+
+function showLogoPreview(preview, url) {
+  preview.replaceChildren(url
+    ? h("img", { src: url, alt: "Logo önizlemesi", onerror: (e) => e.target.replaceWith(icon("broken_image")) })
+    : icon("image"));
+}
+
+async function uploadLogo(fileInput, urlInput, preview, status) {
+  const file = fileInput.files[0];
+  fileInput.value = "";
+  if (!file) return;
+  const form = $("editor-form");
+  const id = form.elements.id.value.trim();
+  const ext = LOGO_TYPES[file.type];
+  const error = !id || !/^[A-Za-z0-9_-]+$/.test(id) ? "Önce geçerli bir ID yaz; dosya adı ona göre verilir."
+    : !ext ? "PNG, JPG veya WebP bir görsel seç."
+    : file.size > LOGO_MAX_BYTES ? "Logo en fazla 1 MB olabilir."
+    : "";
+  if (error) {
+    status.className = "field-error";
+    status.textContent = error;
+    return;
+  }
+  status.className = "muted";
+  status.textContent = "Yükleniyor…";
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+    const hash = [...digest.slice(0, 4)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    const url = await state.client.uploadFile(`logos/${id}-${hash}.${ext}`, bytes, `logo: ${id}`);
+    urlInput.value = url;
+    showLogoPreview(preview, url);
+    status.textContent = "Yüklendi. Kaydedip yayınlayınca uygulamalarda görünür (önizleme birkaç dakika gecikebilir).";
+  } catch (err) {
+    status.className = "field-error";
+    status.textContent = err.message;
+  }
 }
 
 function buildEditor(draft, isExisting) {
@@ -376,7 +443,9 @@ function buildEditor(draft, isExisting) {
           h("input", { type: "checkbox", name: "hidden", checked: draft.hidden }),
           h("span", {}, "Mağazada gizle")))),
 
-    h("div", { class: "section-title" }, icon("palette"), "İkon"),
+    h("div", { class: "section-title" }, icon("palette"), "Logo"),
+    buildLogoField(draft),
+    h("p", { class: "muted small" }, "Logo yoksa ya da yüklenemezse gösterilecek simge:"),
     iconGrid,
 
     h("div", { class: "section-title" }, icon("description"), "Açıklamalar"),
@@ -420,6 +489,7 @@ function readEditor(form, draft) {
     release_date: value("release_date"),
     featured: form.elements.featured.checked,
     hidden: form.elements.hidden.checked,
+    logo: value("logo"),
     description_tr: value("description_tr"),
     description_en: value("description_en"),
     changelog: { tr: value("changelog_tr"), en: value("changelog_en") },

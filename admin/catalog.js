@@ -63,7 +63,7 @@ export function emptyApp() {
   return {
     id: "", name: "", description_tr: "", description_en: "",
     category: "app", status: "upcoming", version: "", github_repo: "",
-    icon: "default", platforms: [], release_date: "", downloads: {}, featured: false,
+    icon: "default", logo: "", platforms: [], release_date: "", downloads: {}, featured: false,
     changelog: { tr: "", en: "" }, screenshots: [], hidden: false,
   };
 }
@@ -122,6 +122,7 @@ export function serializeApp(app) {
     out.download_url = legacy.url;
     out.size_mb = legacy.size_mb || 0;
   }
+  if (app.logo) out.logo = app.logo;
   if (app.featured) out.featured = true;
   const changelog = Object.fromEntries(
     Object.entries(app.changelog || {}).filter(([, text]) => text && text.trim()));
@@ -190,6 +191,7 @@ export function validateApp(app, allApps, originalId = null) {
   if (app.status !== "upcoming" && !app.version.trim()) errors.version = "Yayındaki bir uygulamanın sürümü olmalı.";
   if (app.release_date && !DATE_PATTERN.test(app.release_date)) errors.release_date = "Tarih YYYY-AA-GG biçiminde olmalı.";
   if (app.github_repo && !REPO_PATTERN.test(app.github_repo)) errors.github_repo = "'kullanıcı/repo' biçiminde yaz.";
+  if (app.logo && !isHttpUrl(app.logo)) errors.logo = "Logo adresi geçerli bir URL değil.";
 
   for (const { key, label } of PLATFORMS) {
     const d = app.downloads[key];
