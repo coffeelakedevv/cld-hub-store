@@ -1,6 +1,6 @@
 # CLD Hub Store
 
-coffeelakedev uygulama ve oyun mağazası **CLD Hub**'ın herkese açık verileri. CLD Hub bu
+Lumina Software'in uygulama ve oyun mağazası **CLD Hub**'ın herkese açık verileri. CLD Hub bu
 repodaki kataloğu okuyarak uygulamaları listeler ve günceller.
 
 | | |
@@ -11,4 +11,4 @@ repodaki kataloğu okuyarak uygulamaları listeler ve günceller.
 
 ---
 
-© 2026 coffeelakedev. Tüm hakları saklıdır.
+© 2026 Lumina Software. Tüm hakları saklıdır.
